@@ -26,7 +26,8 @@ export async function run(): Promise<void> {
     mergeMultiple: core.getBooleanInput(Inputs.MergeMultiple, {
       required: false
     }),
-    artifactIds: core.getInput(Inputs.ArtifactIds, {required: false})
+    artifactIds: core.getInput(Inputs.ArtifactIds, {required: false}),
+    unzip: core.getInput(Inputs.UnZip, {required: false})
   }
 
   if (!inputs.path) {
@@ -169,10 +170,12 @@ export async function run(): Promise<void> {
     })
   }
 
+  const unzip_list = inputs.unzip.split(',');
   const downloadPromises = artifacts.map(artifact => ({
     name: artifact.name,
     promise: artifactClient.downloadArtifact(artifact.id, {
       ...options,
+      unzip: inputs.unzip === 'true' || inputs.unzip === '*' || unzip_list.includes(artifact.id.toString()) || unzip_list.includes(artifact.name),
       path:
         isSingleArtifactDownload || inputs.mergeMultiple
           ? resolvedPath
