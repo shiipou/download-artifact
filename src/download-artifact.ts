@@ -176,6 +176,7 @@ export async function run(): Promise<void> {
     promise: artifactClient.downloadArtifact(artifact.id, {
       ...options,
       unzip: inputs.unzip === 'true' || inputs.unzip === '*' || unzip_list.includes(artifact.id.toString()) || unzip_list.includes(artifact.name),
+      filename: artifact.name,
       path:
         isSingleArtifactDownload || inputs.mergeMultiple
           ? resolvedPath
