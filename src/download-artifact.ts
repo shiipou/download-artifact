@@ -173,13 +173,15 @@ export async function run(): Promise<void> {
   const unzip_list = inputs.unzip.split(',');
   const downloadPromises = artifacts.map(artifact => {
     const unzip = inputs.unzip === 'true' || inputs.unzip === '*' || unzip_list.includes(artifact.id.toString()) || unzip_list.includes(artifact.name)
+    core.debug(`Unzip option for artifact '${artifact.name}': ${unzip}`)
     return {
       name: artifact.name,
       promise: artifactClient.downloadArtifact(artifact.id, {
         ...options,
         unzip,
+        artifactName: artifact.name,
         path:
-          isSingleArtifactDownload || inputs.mergeMultiple || unzip
+          isSingleArtifactDownload || inputs.mergeMultiple
             ? resolvedPath
             : path.join(resolvedPath, artifact.name),
         expectedHash: artifact.digest
