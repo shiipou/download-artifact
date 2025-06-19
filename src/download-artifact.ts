@@ -171,19 +171,21 @@ export async function run(): Promise<void> {
   }
 
   const unzip_list = inputs.unzip.split(',');
-  const downloadPromises = artifacts.map(artifact => ({
-    name: artifact.name,
-    promise: artifactClient.downloadArtifact(artifact.id, {
-      ...options,
-      unzip: inputs.unzip === 'true' || inputs.unzip === '*' || unzip_list.includes(artifact.id.toString()) || unzip_list.includes(artifact.name),
-      filename: artifact.name,
-      path:
-        isSingleArtifactDownload || inputs.mergeMultiple
-          ? resolvedPath
-          : path.join(resolvedPath, artifact.name),
-      expectedHash: artifact.digest
-    })
-  }))
+  const downloadPromises = artifacts.map(artifact => {
+    const unzip = inputs.unzip === 'true' || inputs.unzip === '*' || unzip_list.includes(artifact.id.toString()) || unzip_list.includes(artifact.name)
+    return {
+      name: artifact.name,
+      promise: artifactClient.downloadArtifact(artifact.id, {
+        ...options,
+        unzip,
+        path:
+          isSingleArtifactDownload || inputs.mergeMultiple || unzip
+            ? resolvedPath
+            : path.join(resolvedPath, artifact.name),
+        expectedHash: artifact.digest
+      })
+    }
+  })
 
   const chunkedPromises = chunk(downloadPromises, PARALLEL_DOWNLOADS)
   for (const chunk of chunkedPromises) {
